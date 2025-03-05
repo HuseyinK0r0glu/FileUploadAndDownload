@@ -61,12 +61,22 @@ public class FileResource {
         if(!Files.exists(filePath)){
             throw new FileNotFoundException(filename + " was not found on the server");
         }
+
         Resource resource = new UrlResource(filePath.toUri());
+
+        String contentType = Files.probeContentType(filePath);
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.add("File-Name",filename);
         headers.add(CONTENT_DISPOSITION,"attachment;File-Name=" + resource.getFilename());
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(filePath)))
-                .headers(headers).body(resource);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .headers(headers)
+                .body(resource);
     }
 
     @GetMapping("/files")
