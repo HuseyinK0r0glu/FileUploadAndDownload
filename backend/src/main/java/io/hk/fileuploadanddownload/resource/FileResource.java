@@ -3,6 +3,7 @@ package io.hk.fileuploadanddownload.resource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
@@ -65,5 +67,22 @@ public class FileResource {
         headers.add(CONTENT_DISPOSITION,"attachment;File-Name=" + resource.getFilename());
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(filePath)))
                 .headers(headers).body(resource);
+    }
+
+    @GetMapping("/files")
+    public ResponseEntity<List<String>> listFiles() {
+        File uploadDir = new File(DIRECTORY);
+        if (!uploadDir.exists() || !uploadDir.isDirectory()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+
+        // Get the list of files in the directory
+        String[] files = uploadDir.list();
+        List<String> filenames = new ArrayList<>();
+        if (files != null) {
+            filenames.addAll(Arrays.asList(files));
+        }
+
+        return ResponseEntity.ok().body(filenames);
     }
 }
